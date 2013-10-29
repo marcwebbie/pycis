@@ -7,6 +7,7 @@ testfile_path = os.path.realpath(os.path.abspath(__file__))
 sys.path.append(os.path.dirname(os.path.dirname(testfile_path)))
 
 from pycis import items
+from pycis import wrappers
 
 
 class ItemsTestCase(unittest.TestCase):
@@ -50,6 +51,13 @@ class ItemsTestCase(unittest.TestCase):
         expected_str = 'Media(title="The Animal Kingdom", url="https://archive.org/details/Animal_Kingdom", has_children={})'
         self.assertEqual(str(media), expected_str.format(False))
         self.assertEqual(str(media_with_children), expected_str.format(True))
+
+
+class Wrappers(unittest.TestCase):
+
+    def test_get_wrapper_list_return_list(self):
+        wrapper_list = wrappers.get_wrapper_list()
+        self.assertIsInstance(wrapper_list, list)
 
 if __name__ == "__main__":
     unittest.main()
