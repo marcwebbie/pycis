@@ -53,7 +53,7 @@ class ItemsTestCase(unittest.TestCase):
         self.assertEqual(str(media_with_children), expected_str.format(True))
 
 
-class Wrappers(unittest.TestCase):
+class WrappersTestCase(unittest.TestCase):
 
     def test_get_wrapper_list_return_list(self):
         wrapper_list = wrappers.get_wrapper_list()
@@ -71,6 +71,20 @@ class Wrappers(unittest.TestCase):
     def test_get_wrapper_by_name_is_callable(self):
         self.assertTrue(callable(wrappers.get_wrapper))
 
+
+class ArchiveWrapperTest(unittest.TestCase):
+
+    def test_wrapper_search_return_media_list(self):
+        from pycis.wrappers.base_wrapper import BaseWrapper
+        archive_wrapper = wrappers.get_wrapper("archive")
+
+        self.assertIsInstance(archive_wrapper, BaseWrapper)
+        media_list = archive_wrapper.search("the animal kingdom")
+
+        self.assertIsInstance(media_list, list)
+
+        for media in media_list:
+            self.assertIsInstance(media, items.Media)
 
 if __name__ == "__main__":
     unittest.main()
