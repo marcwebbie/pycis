@@ -19,7 +19,7 @@ def get_wrapper_list():
 
     wrapper_instance_list = []
     for mod in [v for k, v in globals().items() if k in __all__]:
-        crawler_instance_list += [getattr(mod, klass)()
+        wrapper_instance_list += [getattr(mod, klass)()
                                   for klass in dir(mod)
                                   if klass.endswith("Wrapper")
                                   and klass != "BaseWrapper"]

@@ -59,5 +59,18 @@ class Wrappers(unittest.TestCase):
         wrapper_list = wrappers.get_wrapper_list()
         self.assertIsInstance(wrapper_list, list)
 
+    def test_get_wrapper_list_return_list_doesnt_include_base_wrapper(self):
+        from pycis.wrappers.base_wrapper import BaseWrapper
+
+        wrapper_list = wrappers.get_wrapper_list()
+        for wrapper in wrapper_list:
+            self.assertNotEqual(wrapper.name, "base")
+
+        self.assertEqual(wrappers.get_wrapper(name="base"), None)
+
+    def test_get_wrapper_by_name_is_callable(self):
+        self.assertTrue(callable(wrappers.get_wrapper))
+
+
 if __name__ == "__main__":
     unittest.main()

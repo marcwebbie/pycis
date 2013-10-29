@@ -4,8 +4,6 @@ class BaseWrapper(object):
     It also add utility functions to be shared by sub classes.
 
     Sub classes should override:
-        self.name:
-            Wrapper name
         self.site_url:
             Wrapped site base url
         get_streams(self, media):
@@ -14,9 +12,13 @@ class BaseWrapper(object):
             Search wrapped site for Media objects. Return a list of Media
     """
 
-    def __init__(self, name, site_url):
-        self.name = name
+    def __init__(self, site_url):
         self.site_url = site_url
+
+    @property
+    def name(self):
+        class_name = self.__class__.__name__.lower().strip('wrapper')
+        return class_name
 
     def get_streams(self, media):
         raise NotImplemented("get_streams wasn't overriden by base class")
