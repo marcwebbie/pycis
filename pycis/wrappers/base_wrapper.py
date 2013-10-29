@@ -12,8 +12,8 @@ class BaseWrapper(object):
             Search wrapped site for Media objects. Return a list of Media
     """
 
-    def __init__(self, site_url):
-        self.site_url = site_url
+    def __init__(self):
+        self.site_url = None
 
     @property
     def name(self):
