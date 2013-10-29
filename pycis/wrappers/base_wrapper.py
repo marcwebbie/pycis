@@ -15,6 +15,10 @@ class BaseWrapper(object):
     def __init__(self):
         self.site_url = None
 
+    def __str__(self):
+        class_name = self.__class__.__name__
+        return "{}(name={}, site_url={})".format(class_name, self.name, self.site_url)
+
     @property
     def name(self):
         class_name = self.__class__.__name__.lower().replace('wrapper', '')
