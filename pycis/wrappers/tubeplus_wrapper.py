@@ -9,7 +9,6 @@ else:
     from urllib import quote_plus
     from urlparse import urljoin
 
-
 from pyquery import PyQuery
 
 from .base_wrapper import BaseWrapper
@@ -25,7 +24,7 @@ class TubeplusWrapper(BaseWrapper):
     def get_streams(self):
         pass
 
-    def search(self, search_query):
+    def search_film(self, search_query):
         logging.info('Searching film for query: {}'.format(search_query))
 
         search_url = "/search/movies/" + quote_plus(search_query)
@@ -53,6 +52,10 @@ class TubeplusWrapper(BaseWrapper):
 
             film_list.append(film)
 
+        return film_list
+
+    def search(self, search_query):
+        film_list = self.search_film(search_query)
         return film_list
 
     def index(self):
