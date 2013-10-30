@@ -84,5 +84,14 @@ class TubePlusWrapperTest(unittest.TestCase):
         stream_list = self.tubeplus_wrapper.get_streams(first_media)
         self.assertIsInstance(stream_list, list)
 
+    def test_tubeplus_wrapper_get_children(self):
+        media_list = self.tubeplus_wrapper.search_tvshow("Vampire Diaries")
+        first_media = media_list[0]
+
+        children_list = self.tubeplus_wrapper.get_children(first_media)
+
+        self.assertIsInstance(children_list, list)
+        self.assertTrue(all(m for m in children_list if isinstance(m, items.Media)))
+
 if __name__ == "__main__":
     unittest.main()

@@ -13,7 +13,7 @@ from pyquery import PyQuery
 
 from .base_wrapper import BaseWrapper
 from .utils import fetch_page
-from pycis.items import Media, Film, Stream
+from pycis.items import Media, Film, Stream, TvShow
 
 
 class TubeplusWrapper(BaseWrapper):
@@ -55,11 +55,44 @@ class TubeplusWrapper(BaseWrapper):
 
         return stream_list
 
+    def get_children(self, media):
+        logging.info('Searching children for media: {}'.format(media))
+
+        if sys.version_info > (3, 0):
+            from html.parser import HTMLParser
+            from urllib.parse import unquote
+        else:
+            from HTMLParser import HTMLParser
+            from urllib2 import unquote
+
+        media_page = fetch_page(media.url)
+        pq = PyQuery(media_page)
+
+        rgx = re.compile(
+            r"/player/\d+/(?P<serie>\w+)/season_(?P<season>\d+)/episode_(?P<episode>\d+)/(?P<title>[\w´`\'\",\.]+)")
+        links = [a.attrib.get('href') for a in pq('.seasons[href]')]
+
+        # build episodes
+        episode_list = []
+        for link in links:
+            title = re.search(rgx, link).group('title')
+            title = re.sub('_', ' ', title)
+            url = urljoin(self.site_url, link)
+
+            episode = TvShow(title=title, url=url)
+
+            link = HTMLParser().unescape(unquote(link))
+            episode.episode_num = int(re.search(rgx, link).group('episode'))
+            episode.season_num = int(re.search(rgx, link).group('season'))
+
+            episode_list.append(episode)
+
+        return episode_list
+
     def search_film(self, search_query):
         logging.info('Searching film for query: {}'.format(search_query))
 
         search_url = "/search/movies/" + quote_plus(search_query)
-
         search_page = fetch_page(self.site_url, extra_path=search_url)
         pq = PyQuery(search_page)
 
@@ -70,7 +103,7 @@ class TubeplusWrapper(BaseWrapper):
             href = pq(dom_item).find('a.panel').attr('href')
             url = urljoin(self.site_url, href)
 
-            film = Film(title=title, url=url)
+            film = Media(title=title, url=url)
 
             # set description
             desc = pq(dom_item).find('.plot').text()
@@ -84,6 +117,39 @@ class TubeplusWrapper(BaseWrapper):
             film_list.append(film)
 
         return film_list
+
+    def search_tvshow(self, search_query):
+        logging.info('Searching tvshow for query: {}'.format(search_query))
+
+        search_url = "/search/tv-shows/" + quote_plus(search_query)
+        search_page = fetch_page(self.site_url, extra_path=search_url)
+        pq = PyQuery(search_page)
+
+        dom_search_list = pq(u".list_item")
+        tvshow_list = []
+
+        for dom_item in dom_search_list:
+            title = pq(dom_item).find('img[border="0"]').show().attr('alt')
+            href = pq(dom_item).find('a.panel').attr('href')
+            url = urljoin(self.site_url, href)
+
+            # Since it is a tvshow we need to fetch the children episodes
+            tvshow = Media(title=title, url=url, has_children=True)
+
+            # set description
+            desc = pq(dom_item).find('.plot').text()
+            tvshow.description = re.sub('\s', ' ', str(desc))  # remove newlines from description
+
+            # set rating
+            tvshow.rating = pq(dom_item).find('span.rank_value').text()
+
+            # set thumbnail url
+            href_thumbnail = pq(dom_item).find('img[border="0"]').show().attr('src')
+            tvshow.thumbnail = urljoin(self.site_url, href_thumbnail)
+
+            tvshow_list.append(tvshow)
+
+        return tvshow_list
 
     def search(self, search_query):
         film_list = self.search_film(search_query)
