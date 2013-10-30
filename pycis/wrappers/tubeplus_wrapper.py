@@ -152,8 +152,9 @@ class TubeplusWrapper(BaseWrapper):
         return tvshow_list
 
     def search(self, search_query):
-        film_list = self.search_film(search_query)
-        return film_list
+        media_list = self.search_film(search_query)
+        media_list.extend(self.search_tvshow(search_query))
+        return media_list
 
     def index(self):
         pass
