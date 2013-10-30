@@ -29,6 +29,9 @@ class BaseWrapper(object):
     def get_streams(self, media):
         raise NotImplemented("get_streams wasn't overriden by base class")
 
+    def get_children(self, media):
+        raise NotImplemented("get_children wasn't overriden by base class")
+
     def search(self, search_query, **search_options):
         raise NotImplemented("search wasn't overriden by base class")
 

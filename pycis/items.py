@@ -69,7 +69,7 @@ class Film(Media):
 
 class TvShow(Media):
 
-    def __init__(self, title, url, has_children=False, season_num=None, episode=None):
+    def __init__(self, title, url, has_children=False, season_num=None, episode_num=None):
         super(TvShow, self).__init__(title, url, has_children)
 
         self.season_num = season_num
