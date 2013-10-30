@@ -13,7 +13,7 @@ from pyquery import PyQuery
 
 from .base_wrapper import BaseWrapper
 from .utils import fetch_page
-from pycis.items import Media, Film
+from pycis.items import Media, Film, Stream
 
 
 class TubeplusWrapper(BaseWrapper):
@@ -21,8 +21,39 @@ class TubeplusWrapper(BaseWrapper):
     def __init__(self):
         self.site_url = "http://www.tubeplus.me"
 
-    def get_streams(self):
-        pass
+    def get_streams(self, media):
+        logging.info("Extracting: {}".format(media))
+
+        if not media.url:
+            logging.warn("{} has no url".format(media))
+            return None
+
+        media_page = fetch_page(media.url)
+        pq = PyQuery(media_page)
+
+        stream_list = []
+
+        # extract video id and video host name from href links
+        # from page fetched by media url
+        href_rgx = re.compile(
+            r"'(?P<vid>[\w\.:/\?\=\&]+)'[\s,]+'(?:[\w\s\-\":,\.`´\\]+)?'[\s,]+'(?P<host>[\w\.]+)'"
+        )
+        for href in (a.attrib.get('href') for a in pq('#links_list .link a:not([class])')):
+            try:
+                video_url = href
+                video_host = href_rgx.search(href).group('host')
+                video_id = href_rgx.search(href).group('vid')
+
+                stream = Stream(video_id, video_host, video_url)
+                logging.info("Found {} for {}".format(stream, media))
+
+                stream_list.append(stream)
+            except AttributeError:
+                # if an exception occured the href_rgx couldn't match something on href
+                logging.error("Couldn't get video info from: {}".format(href))
+                pass
+
+        return stream_list
 
     def search_film(self, search_query):
         logging.info('Searching film for query: {}'.format(search_query))

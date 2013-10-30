@@ -78,5 +78,11 @@ class TubePlusWrapperTest(unittest.TestCase):
         self.assertIsInstance(media_list, list)
         self.assertIn("Eat Pray Love", (m.title for m in media_list))
 
+    def test_tubeplus_wrapper_get_streams_return_list(self):
+        media_list = self.tubeplus_wrapper.search("Eat Pray Love")
+        first_media = media_list[0]
+        stream_list = self.tubeplus_wrapper.get_streams(first_media)
+        self.assertIsInstance(stream_list, list)
+
 if __name__ == "__main__":
     unittest.main()
