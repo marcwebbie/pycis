@@ -10,6 +10,8 @@ class BaseWrapper(object):
             Get a list of stream for given Media
         search(self, search_query):
             Search wrapped site for Media objects. Return a list of Media
+        index(self):
+            Return a list of options to be navigated by user
     """
 
     def __init__(self):
@@ -29,3 +31,6 @@ class BaseWrapper(object):
 
     def search(self, search_query, **search_options):
         raise NotImplemented("search wasn't overriden by base class")
+
+    def index(self):
+        return None
