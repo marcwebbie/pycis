@@ -1,8 +1,10 @@
-try:
+import sys
+if sys.version_info > (3, 0):
     from urllib.request import urlopen, Request
-    from urllib.parse import urljoin
-except:
+    from urllib.parse import urljoin, quote_plus
+else:
     # fallback to python2
+    from urllib import quote_plus
     from urllib2 import urlopen, Request
     from urlparse import urljoin
 

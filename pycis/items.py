@@ -34,8 +34,12 @@ class Media(object):
         self.title = title
         self.url = url
         self.has_children = has_children
+
+        self.description = None
         self.rating = None
         self.genres = []
+        self.year = None
+        self.thumbnail = None
 
     @property
     def code(self):
@@ -57,7 +61,7 @@ class Media(object):
 class Film(Media):
 
     def __init__(self, title, url, has_children=False, actors=None, directors=None):
-        super(Film, self).__init__(name, url, has_children)
+        super(Film, self).__init__(title, url, has_children)
 
         self.actors = actors if actors else []
         self.directors = directors if directors else []
@@ -66,7 +70,7 @@ class Film(Media):
 class TvShow(Media):
 
     def __init__(self, title, url, has_children=False, season_num=None, episode=None):
-        super(TvShow, self).__init__(name, url, has_children)
+        super(TvShow, self).__init__(title, url, has_children)
 
         self.season_num = season_num
         self.episode_num = episode_num
@@ -80,7 +84,7 @@ class TvShow(Media):
 class Song(Media):
 
     def __init__(self, title, url, artist=None, album=None, composer=None, has_children=False):
-        super(Song, self).__init__(name, url, has_children)
+        super(Song, self).__init__(title, url, has_children)
 
         self.artist = artist
         self.album = album

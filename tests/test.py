@@ -68,17 +68,15 @@ class ArchiveWrapperTest(unittest.TestCase):
 
 class TubePlusWrapperTest(unittest.TestCase):
 
-    def test_tubeplus_wrapper_search_return_media_list(self):
+    def setUp(self):
         from pycis.wrappers.base_wrapper import BaseWrapper
-        tubeplus_wrapper = wrappers.get_wrapper("tubeplus")
+        self.tubeplus_wrapper = wrappers.get_wrapper("tubeplus")
 
-        self.assertIsInstance(tubeplus_wrapper, BaseWrapper)
-        media_list = tubeplus_wrapper.search("Eat Pray Love")
+    def test_tubeplus_wrapper_search_returns_right_media(self):
+        media_list = self.tubeplus_wrapper.search("Eat Pray Love")
 
         self.assertIsInstance(media_list, list)
-
-        for media in media_list:
-            self.assertIsInstance(media, items.Media)
+        self.assertIn("Eat Pray Love", (m.title for m in media_list))
 
 if __name__ == "__main__":
     unittest.main()
