@@ -25,14 +25,15 @@ class Media(object):
 
     """ Holds info about a media object it may be a film, tvshow, episode, music
 
-    get_children is should be a function to call containing streams in a group. Tvshows
-    are a good example, they containg multiple children episodes
+    If has_children is true it means that this media contain children media 
+    to be fetched before getting streams in a group. Tvshows are a good example 
+    as they contain multiple children episodes.
     """
 
-    def __init__(self, title, url, get_children=None):
+    def __init__(self, title, url, has_children=False):
         self.title = title
         self.url = url
-        self.get_children = get_children
+        self.has_children = has_children
         self.rating = None
         self.genres = []
 
@@ -46,27 +47,17 @@ class Media(object):
         """ return extra info to be printed on the interface """
         return None
 
-    @property
-    def has_children(self):
-        """ test if get_children function was set """
-        return self.get_children != None
-
     def __str__(self):
         class_name = self.__class__.__name__
-        fstr = u'{0}(title="{1}", url="{2}", has_children={3})'.format(
-            class_name,
-            self.title,
-            self.url,
-            self.has_children
-        )
+        fstr = u'{0}(title="{1.title!s}", url="{1.url!s}", has_children={1.has_children!s})'
 
-        return fstr
+        return fstr.format(class_name, self)
 
 
 class Film(Media):
 
-    def __init__(self, title, url, get_children=None, actors=None, directors=None):
-        super(Film, self).__init__(name, url, get_children)
+    def __init__(self, title, url, has_children=False, actors=None, directors=None):
+        super(Film, self).__init__(name, url, has_children)
 
         self.actors = actors if actors else []
         self.directors = directors if directors else []
@@ -74,8 +65,8 @@ class Film(Media):
 
 class TvShow(Media):
 
-    def __init__(self, title, url, get_children=None, season_num=None, episode=None):
-        super(TvShow, self).__init__(name, url, get_children)
+    def __init__(self, title, url, has_children=False, season_num=None, episode=None):
+        super(TvShow, self).__init__(name, url, has_children)
 
         self.season_num = season_num
         self.episode_num = episode_num
@@ -88,8 +79,8 @@ class TvShow(Media):
 
 class Song(Media):
 
-    def __init__(self, title, url, artist=None, album=None, composer=None, get_children=None):
-        super(Song, self).__init__(name, url, get_children)
+    def __init__(self, title, url, artist=None, album=None, composer=None, has_children=False):
+        super(Song, self).__init__(name, url, has_children)
 
         self.artist = artist
         self.album = album

@@ -21,32 +21,11 @@ class ItemsTestCase(unittest.TestCase):
         self.assertEqual(media.url, url)
         self.assertNotEqual(media.title, "wrong title")
 
-    def test_media_items_has_children_method_returns_true_when_get_children_is_set(self):
-        title = "The Animal Kingdom"
-        url = "https://archive.org/details/Animal_Kingdom"
-        get_children_func = lambda: "I have no children"
-        media_with_children = items.Media(title=title, url=url, get_children=get_children_func)
-        media_without_children = items.Media(title=title, url=url)
-
-        self.assertFalse(media_without_children.has_children)
-        self.assertTrue(media_with_children.has_children)
-
-    def test_media_get_children(self):
-        title = "The Animal Kingdom"
-        url = "https://archive.org/details/Animal_Kingdom"
-        children_media = [items.Media(None, None), items.Media(None, None)]
-        get_children_func = lambda: children_media
-
-        media = items.Media(title=title, url=url, get_children=get_children_func)
-
-        self.assertEqual(media.get_children, get_children_func)
-        self.assertEqual(media.get_children(), children_media)
-
     def test_media_str_representation(self):
         title = "The Animal Kingdom"
         url = "https://archive.org/details/Animal_Kingdom"
         media = items.Media(title=title, url=url)
-        media_with_children = items.Media(title=title, url=url, get_children=lambda: "function")
+        media_with_children = items.Media(title=title, url=url, has_children=True)
 
         expected_str = 'Media(title="The Animal Kingdom", url="https://archive.org/details/Animal_Kingdom", has_children={})'
         self.assertEqual(str(media), expected_str.format(False))
@@ -80,6 +59,21 @@ class ArchiveWrapperTest(unittest.TestCase):
 
         self.assertIsInstance(archive_wrapper, BaseWrapper)
         media_list = archive_wrapper.search("the animal kingdom")
+
+        self.assertIsInstance(media_list, list)
+
+        for media in media_list:
+            self.assertIsInstance(media, items.Media)
+
+
+class TubePlusWrapperTest(unittest.TestCase):
+
+    def test_tubeplus_wrapper_search_return_media_list(self):
+        from pycis.wrappers.base_wrapper import BaseWrapper
+        tubeplus_wrapper = wrappers.get_wrapper("tubeplus")
+
+        self.assertIsInstance(tubeplus_wrapper, BaseWrapper)
+        media_list = tubeplus_wrapper.search("Eat Pray Love")
 
         self.assertIsInstance(media_list, list)
 
