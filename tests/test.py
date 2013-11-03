@@ -7,6 +7,7 @@ testfile_path = os.path.realpath(os.path.abspath(__file__))
 sys.path.append(os.path.dirname(os.path.dirname(testfile_path)))
 
 from pycis import items
+from pycis import extractors
 from pycis import wrappers
 from pycis.wrappers.base_wrapper import BaseWrapper
 
@@ -84,6 +85,20 @@ class WrappersTestCase(unittest.TestCase):
 
         self.assertIsInstance(children_list, list)
         self.assertTrue(all(m for m in children_list if isinstance(m, items.Media)))
+
+
+class ExtractorsTestCase(unittest.TestCase):
+
+    def setUp(self):
+        pass
+
+    def test_nowvideo_extractor(self):
+        url = "http://www.nowvideo.sx/video/02452e9362f53"
+        extractor = extractors.get_from_url(url)
+
+        dlurl = extractor.get_raw_url(url)
+        self.assertIsNot(dlurl, None)
+        self.assertTrue("flv" in dlurl or "mp4" in dlurl)
 
 if __name__ == "__main__":
     unittest.main()
