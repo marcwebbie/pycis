@@ -8,6 +8,7 @@ sys.path.append(os.path.dirname(os.path.dirname(testfile_path)))
 
 from pycis import items
 from pycis import wrappers
+from pycis.wrappers.base_wrapper import BaseWrapper
 
 
 class ItemsTestCase(unittest.TestCase):
@@ -34,6 +35,10 @@ class ItemsTestCase(unittest.TestCase):
 
 class WrappersTestCase(unittest.TestCase):
 
+    def setUp(self):
+        self.tubeplus_wrapper = wrappers.get_wrapper("tubeplus")
+        self.archive_wrapper = wrappers.get_wrapper("archive")
+
     def test_get_wrapper_list_return_list(self):
         wrapper_list = wrappers.get_wrapper_list()
         self.assertIsInstance(wrapper_list, list)
@@ -50,27 +55,14 @@ class WrappersTestCase(unittest.TestCase):
     def test_get_wrapper_by_name_is_callable(self):
         self.assertTrue(callable(wrappers.get_wrapper))
 
-
-class ArchiveWrapperTest(unittest.TestCase):
-
-    def test_wrapper_search_return_media_list(self):
-        from pycis.wrappers.base_wrapper import BaseWrapper
-        archive_wrapper = wrappers.get_wrapper("archive")
-
-        self.assertIsInstance(archive_wrapper, BaseWrapper)
-        media_list = archive_wrapper.search("the animal kingdom")
+    def test_archive_wrapper_search_return_media_list(self):
+        self.assertIsInstance(self.archive_wrapper, BaseWrapper)
+        media_list = self.archive_wrapper.search("the animal kingdom")
 
         self.assertIsInstance(media_list, list)
 
         for media in media_list:
             self.assertIsInstance(media, items.Media)
-
-
-class TubePlusWrapperTest(unittest.TestCase):
-
-    def setUp(self):
-        from pycis.wrappers.base_wrapper import BaseWrapper
-        self.tubeplus_wrapper = wrappers.get_wrapper("tubeplus")
 
     def test_tubeplus_wrapper_search_returns_right_media(self):
         media_list = self.tubeplus_wrapper.search("Eat Pray Love")
