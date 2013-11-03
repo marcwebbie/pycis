@@ -12,7 +12,7 @@ else:
 from pyquery import PyQuery
 
 from .base_wrapper import BaseWrapper
-from .utils import fetch_page
+from pycis.utils import fetch_page
 from pycis.items import Media, Film, Stream, TvShow
 
 
