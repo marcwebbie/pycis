@@ -100,5 +100,13 @@ class ExtractorsTestCase(unittest.TestCase):
         self.assertIsNot(dlurl, None)
         self.assertTrue("flv" in dlurl or "mp4" in dlurl)
 
+    def test_divxstage_extractor(self):
+        url = "http://www.divxstage.eu/video/v7f6bhbgvcbgw"
+        extractor = extractors.get_from_url(url)
+
+        dlurl = extractor.get_raw_url(url)
+        self.assertIsNot(dlurl, None)
+        self.assertTrue("flv" in dlurl or "mp4" in dlurl)
+
 if __name__ == "__main__":
     unittest.main()
