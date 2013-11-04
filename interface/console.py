@@ -12,10 +12,6 @@ sys.path.append(os.path.dirname(os.path.dirname(console_file_path)))
 from pycis import extractors
 from pycis import wrappers
 
-dl_queue = Queue()
-num_of_workers = 5
-final_url_list = []
-
 
 def get_args():
     aparser = argparse.ArgumentParser()
@@ -36,35 +32,45 @@ def get_args():
 
 
 def download(q):
-    st = q.get()
-    logging.info("init downloading: Stream(host={}, id={}) ...".format(st.host, st.id))
-    ext = extractors.get_from_host(st.host)
-    raw_url = ext.get_raw_url(st.id)
-    logging.info("finished downloading: Stream(host={}, id={}) ...".format(st.host, st.id))
-    final_url_list.append(raw_url)
-    q.task_done()
+    while True:
+        st = q.get()
+        logging.info("init downloading: Stream(host={}, id={}) ...".format(st.host, st.id))
+        ext = extractors.get_from_host(st.host)
+        raw_url = ext.get_raw_url(st.id)
+        logging.info("finished downloading: Stream(host={}, id={}) ...".format(st.host, st.id))
+        if raw_url:
+            # final_url_list.append(raw_url)
+            sys.stdout.write(raw_url)
+            sys.stdout.write('\n')
+            sys.stdout.flush()
+        q.task_done()
+
+dl_queue = Queue()
 
 
-if __name__ == "__main__":
-
+def main():
     args = get_args()
 
+    # setup log level
     if args.verbose:
-        logging.basicConfig(
-            format="{levelname}:{thread:#x}:{module}:{funcName}:{message}",
-            style='{',
-            level=logging.DEBUG)
+        log_level = logging.DEBUG
+    else:
+        log_level = logging.CRITICAL
 
-    num_of_workers = args.workers
-
-    site = wrappers.get_wrapper(args.site)
+    logging.basicConfig(
+        format="{levelname}:{thread:#x}:{module}:{funcName}:{message}",
+        style='{',
+        level=log_level)
 
     # Set up some workers
+    num_of_workers = args.workers
     for i in range(num_of_workers):
         worker = Thread(target=download, args=(dl_queue,))
         worker.setDaemon(True)
         worker.start()
         logging.info("started worker: {}".format(i + 1))
+
+    site = wrappers.get_wrapper(args.site)
 
     search_query = args.search
     dl_choice = args.download
@@ -90,9 +96,13 @@ if __name__ == "__main__":
 
     logging.info('searching: [%s]...' % search_query)
     media_matched = site.search(search_query, best_match=True)
+    if not media_matched:
+        return
 
     logging.info('getting children for: [%s]...' % media_matched)
     media_children = site.get_children(media_matched)
+    if not media_children:
+        return
 
     logging.info('getting episode: [%s]...' % dl_choice)
     episode = None
@@ -100,8 +110,13 @@ if __name__ == "__main__":
         if c.code == dl_choice:
             episode = c
 
+    if not episode:
+        return
+
     logging.info('getting streams for: [%s]...' % episode)
     streams = site.get_streams(episode)
+    if not streams:
+        return
 
     logging.info("getting urls for: [%s]..." % episode)
     url_list = []
@@ -112,5 +127,8 @@ if __name__ == "__main__":
             dl_queue.put(st)
 
     dl_queue.join()
+    print("")
 
-    print("\n".join(final_url_list))
+
+if __name__ == "__main__":
+    main()
