@@ -1,6 +1,9 @@
+import functools
 import logging
 import re
 import sys
+from queue import Queue
+from threading import Thread
 
 if sys.version_info > (3, 0):
     from urllib.parse import quote_plus, urljoin
@@ -16,10 +19,31 @@ from pycis.utils import fetch_page, debug_break
 from pycis.items import Media, Film, Stream, TvShow
 
 
+search_queue = Queue()
+search_result_list = []
+
+
+def search_worker(q):
+    func = q.get()
+    # do the search
+    result_list = func()
+    if result_list:
+        search_result_list.extend(result_list)
+    q.task_done()
+
+
 class TubeplusWrapper(BaseWrapper):
 
-    def __init__(self):
+    def __init__(self, num_workers=9):
         self.site_url = "http://www.tubeplus.me"
+        self.num_workers = num_workers
+        self.temp_media_list = []
+
+        for i in range(self.num_workers):
+            worker = Thread(target=search_worker, args=(search_queue,))
+            worker.setDaemon(True)
+            worker.start()
+            logging.info("set tubeplus worker num: {}".format(i + 1))
 
     def get_streams(self, media):
         logging.info("Extracting: {}".format(media))
@@ -50,7 +74,7 @@ class TubeplusWrapper(BaseWrapper):
                 stream_list.append(stream)
             except AttributeError:
                 # if an exception occured the href_rgx couldn't match something on href
-                logging.error("Couldn't get video info from: {}".format(href))
+                logging.info("Couldn't get video info from: {}".format(href))
                 pass
 
         return stream_list
@@ -152,6 +176,29 @@ class TubeplusWrapper(BaseWrapper):
         return tvshow_list
 
     def search(self, search_query, best_match=False):
+        """ search films and tvshows from tubeplus 
+        """
+
+        search_result_list.clear()
+
+        search_queue.put(functools.partial(self.search_tvshow, search_query))
+        search_queue.put(functools.partial(self.search_film, search_query))
+
+        search_queue.join()
+
+        media_list = search_result_list
+
+        if best_match == True:
+            if media_list:
+                from difflib import SequenceMatcher as sq
+                return max((m for m in media_list),
+                           key=lambda x: sq(None, search_query, x.title).quick_ratio())
+            else:
+                return None
+
+        return media_list
+
+    def old_search(self, search_query, best_match=False):
         media_list = self.search_film(search_query)
         media_list.extend(self.search_tvshow(search_query))
 
