@@ -12,7 +12,7 @@ else:
 from pyquery import PyQuery
 
 from .base_wrapper import BaseWrapper
-from pycis.utils import fetch_page
+from pycis.utils import fetch_page, debug_break
 from pycis.items import Media, Film, Stream, TvShow
 
 
@@ -151,9 +151,18 @@ class TubeplusWrapper(BaseWrapper):
 
         return tvshow_list
 
-    def search(self, search_query):
+    def search(self, search_query, best_match=False):
         media_list = self.search_film(search_query)
         media_list.extend(self.search_tvshow(search_query))
+
+        if best_match == True:
+            if media_list:
+                from difflib import SequenceMatcher as sq
+                return max((m for m in media_list),
+                           key=lambda x: sq(None, search_query, x.title).quick_ratio())
+            else:
+                return None
+
         return media_list
 
     def index(self):

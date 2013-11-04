@@ -23,3 +23,17 @@ def fetch_page(url, extra_path=None):
     response = urlopen(req)
     content = response.read()
     return content
+
+
+def debug_break(func):
+    """ Decorator to break in the first line of decorated function
+    """
+
+    from functools import wraps
+    import pdb
+
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        result = pdb.runcall(func, *args, **kwargs)
+        return result
+    return wrapper

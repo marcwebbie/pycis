@@ -8,8 +8,10 @@ class BaseWrapper(object):
             Wrapped site base url
         get_streams(self, media):
             Get a list of stream for given Media
-        search(self, search_query):
-            Search wrapped site for Media objects. Return a list of Media
+        search(self, search_query, best_match=False):
+            Search wrapped site for Media objects. Return a list of Media.
+            When best_match is True it returns only one media with best
+            search match ratio.
         index(self):
             Return a list of options to be navigated by user
     """
@@ -32,7 +34,7 @@ class BaseWrapper(object):
     def get_children(self, media):
         raise NotImplemented("get_children wasn't overriden by base class")
 
-    def search(self, search_query, **search_options):
+    def search(self, search_query, best_match=False):
         raise NotImplemented("search wasn't overriden by base class")
 
     def index(self):

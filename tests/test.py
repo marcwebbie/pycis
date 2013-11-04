@@ -12,6 +12,14 @@ from pycis import wrappers
 from pycis.wrappers.base_wrapper import BaseWrapper
 
 
+EXQUERY = "vampire diaries"
+EXMEDIA_LIST = wrappers.get_wrapper("tubeplus").search_tvshow(EXQUERY)
+
+
+def not_to_test(func):
+    return lambda *args, **kwargs: None
+
+
 class ItemsTestCase(unittest.TestCase):
 
     def test_media_items_instantiantion(self):
@@ -86,11 +94,12 @@ class WrappersTestCase(unittest.TestCase):
         self.assertIsInstance(children_list, list)
         self.assertTrue(all(m for m in children_list if isinstance(m, items.Media)))
 
+    def test_tubeplus_search_best_match_sequence_matcher(self):
+        best_media = self.tubeplus_wrapper.search("Vampire Diaries", best_match=True)
+        self.assertEqual(best_media.title, "The Vampire Diaries")
+
 
 class ExtractorsTestCase(unittest.TestCase):
-
-    def setUp(self):
-        pass
 
     def test_nowvideo_extractor(self):
         url = "http://www.nowvideo.sx/video/02452e9362f53"
