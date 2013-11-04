@@ -32,6 +32,12 @@ def get_extractor(name):
             return extractor
 
 
+def get_from_host(host):
+    for extractor in get_extractor_instances():
+        if host in extractor.host_list:
+            return extractor
+
+
 def get_from_url(url):
     for extractor in get_extractor_instances():
         if extractor.is_valid_url(url):
