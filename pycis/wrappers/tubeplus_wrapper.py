@@ -24,17 +24,18 @@ search_result_list = []
 
 
 def search_worker(q):
-    func = q.get()
-    # do the search
-    result_list = func()
-    if result_list:
-        search_result_list.extend(result_list)
-    q.task_done()
+    while True:
+        func = q.get()
+        # do the search
+        result_list = func()
+        if result_list:
+            search_result_list.extend(result_list)
+        q.task_done()
 
 
 class TubeplusWrapper(BaseWrapper):
 
-    def __init__(self, num_workers=9):
+    def __init__(self, num_workers=2):
         self.site_url = "http://www.tubeplus.me"
         self.num_workers = num_workers
         self.temp_media_list = []
