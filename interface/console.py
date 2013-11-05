@@ -11,6 +11,27 @@ sys.path.append(os.path.dirname(os.path.dirname(console_file_path)))
 
 from pycis import extractors
 from pycis import wrappers
+from pycis.utils import debug_break
+
+
+class LogFormatter(logging.Formatter):
+    color = {
+        "HEADER": '\033[95m',       # magenta
+        "DEBUG": '\033[94m',        # blue
+        "INFO": '\033[92m',         # green
+        "WARNING": '\033[93m',      # yellow
+        "WARN": '\033[93m',         # yellow
+        "ERROR": '\033[91m',        # red
+        "CRITICAL": '\033[41m',     # background red
+        "FATAL": '\033[41m',        # background red
+        "ENDC": '\033[0m',          # end formatting
+    }
+
+    def format(self, record):
+        final_msg = super().format(record)
+
+        level = record.__dict__['levelname']
+        return LogFormatter.color[level] + final_msg + LogFormatter.color['ENDC']
 
 
 def get_args():
@@ -34,10 +55,10 @@ def get_args():
 def download(q):
     while True:
         st = q.get()
-        logging.info("init downloading: Stream(host={}, id={}) ...".format(st.host, st.id))
+        logging.debug("init downloading: Stream(host={}, id={}) ...".format(st.host, st.id))
         ext = extractors.get_from_host(st.host)
         raw_url = ext.get_raw_url(st.id)
-        logging.info("finished downloading: Stream(host={}, id={}) ...".format(st.host, st.id))
+        logging.debug("finished downloading: Stream(host={}, id={}) ...".format(st.host, st.id))
         if raw_url:
             # final_url_list.append(raw_url)
             sys.stdout.write(raw_url)
@@ -51,16 +72,17 @@ dl_queue = Queue()
 def main():
     args = get_args()
 
-    # setup log level
-    if args.verbose:
-        log_level = logging.DEBUG
-    else:
-        log_level = logging.CRITICAL
+    # setup logger
+    root = logging.getLogger()
+    handler = logging.StreamHandler()
+    bf = LogFormatter('{levelname}:{thread:#x}:{module:<8} {message}', style='{')
+    handler.setFormatter(bf)
+    root.addHandler(handler)
 
-    logging.basicConfig(
-        format="{levelname}:{thread:#x}:{module}:{funcName}:{message}",
-        style='{',
-        level=log_level)
+    if args.verbose:
+        root.setLevel(logging.DEBUG)
+    else:
+        root.setLevel(logging.CRITICAL)
 
     # Set up some workers
     num_of_workers = args.workers
@@ -68,7 +90,7 @@ def main():
         worker = Thread(target=download, args=(dl_queue,))
         worker.setDaemon(True)
         worker.start()
-        logging.info("started worker: {}".format(i + 1))
+        logging.critical("started worker: {}".format(i + 1))
 
     site = wrappers.get_wrapper(args.site)
 
@@ -131,4 +153,7 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except KeyboardInterrupt:
+        print("")
