@@ -204,7 +204,7 @@ class IteractiveConsole(cmd.Cmd):
 def main():
     iconsole = IteractiveConsole("tubeplus")
     iconsole.prompt = "(pycis) "
-    iconsole.cmdloop()
+    iconsole.cmdloop(intro='Welcome to pycis(0.0.1-dev1). Type "help" for more information')
 
 if __name__ == '__main__':
     main()

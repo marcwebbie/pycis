@@ -7,6 +7,7 @@ from threading import Thread
 
 
 console_file_path = os.path.realpath(os.path.abspath(__file__))
+sys.path.append(os.path.dirname(console_file_path))
 sys.path.append(os.path.dirname(os.path.dirname(console_file_path)))
 
 from pycis import extractors
@@ -49,6 +50,7 @@ def get_args():
     aparser.add_argument(
         "-d", "--download", help="What item code to download")
     args = aparser.parse_args()
+
     return args
 
 
@@ -86,6 +88,11 @@ def main():
         root.setLevel(logging.DEBUG)
     else:
         root.setLevel(logging.CRITICAL)
+
+    if not args.search or not args.download:
+        import iteractive
+        iteractive.main()
+        sys.exit()
 
     # Set up some workers
     num_of_workers = args.workers

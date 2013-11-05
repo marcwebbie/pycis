@@ -27,9 +27,12 @@ def search_worker(q):
     while True:
         func = q.get()
         # do the search
-        result_list = func()
-        if result_list:
-            search_result_list.extend(result_list)
+        try:
+            result_list = func()
+            if result_list:
+                search_result_list.extend(result_list)
+        except:
+            logging.error("Search error on search worker")
         q.task_done()
 
 
@@ -44,7 +47,7 @@ class TubeplusWrapper(BaseWrapper):
             worker = Thread(target=search_worker, args=(search_queue,))
             worker.setDaemon(True)
             worker.start()
-            logging.info("set tubeplus worker num: {}".format(i + 1))
+            logging.debug("set tubeplus worker num: {}".format(i + 1))
 
     def get_streams(self, media):
         logging.info("Extracting streams for: {}".format(media))
