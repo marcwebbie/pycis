@@ -1,5 +1,3 @@
-from collections import namedtuple
-
 """ This module represent the base classes for wrappers sending information to interfaces
 
 classes:
@@ -16,6 +14,10 @@ class Stream(object):
         self.id = id
         self.host = host
         self.url = url
+
+    def __str__(self):
+        fstr = 'Stream(id="{0.id!s}", host="{0.host!s}", url="{0.url!s:30.30}")'
+        return fstr.format(self)
 
 
 class Media(object):
