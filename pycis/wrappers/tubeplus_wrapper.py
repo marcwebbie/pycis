@@ -47,7 +47,7 @@ class TubeplusWrapper(BaseWrapper):
             logging.info("set tubeplus worker num: {}".format(i + 1))
 
     def get_streams(self, media):
-        logging.info("Extracting: {}".format(media))
+        logging.info("Extracting streams for: {}".format(media))
 
         if not media.url:
             logging.warn("{} has no url".format(media))
@@ -70,12 +70,12 @@ class TubeplusWrapper(BaseWrapper):
                 video_id = href_rgx.search(href).group('vid')
 
                 stream = Stream(video_id, video_host, video_url)
-                logging.info("Found {} for {}".format(stream, media))
+                logging.info("Retrieved: {}".format(stream))
 
                 stream_list.append(stream)
             except AttributeError:
                 # if an exception occured the href_rgx couldn't match something on href
-                logging.info("Couldn't get video info from: {}".format(href))
+                logging.error("Couldn't get video info from: {}".format(href))
                 pass
 
         return stream_list
