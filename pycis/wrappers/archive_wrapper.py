@@ -9,4 +9,4 @@ class ArchiveWrapper(BaseWrapper):
         self.site_url = "http://archive.org"
 
     def search(self, search_query):
-        return [Media("search_query", "http://archive")]
+        return [Media("search_query", "http://archive", Media.FILM)]

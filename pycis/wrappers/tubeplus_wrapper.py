@@ -16,7 +16,7 @@ from pyquery import PyQuery
 
 from .base_wrapper import BaseWrapper
 from pycis.utils import fetch_page, debug_break
-from pycis.items import Media, Film, Stream, TvShow
+from pycis.items import Media, Stream
 
 
 search_queue = Queue()
@@ -104,7 +104,7 @@ class TubeplusWrapper(BaseWrapper):
             title = re.sub('_', ' ', title)
             url = urljoin(self.site_url, link)
 
-            episode = TvShow(title=title, url=url)
+            episode = Media(title=title, url=url, category=Media.TVSHOW_EPISODE)
 
             link = HTMLParser().unescape(unquote(link))
             episode.episode_num = int(re.search(rgx, link).group('episode'))
@@ -127,8 +127,9 @@ class TubeplusWrapper(BaseWrapper):
             title = pq(dom_item).find('img[border="0"]').show().attr('alt')
             href = pq(dom_item).find('a.panel').attr('href')
             url = urljoin(self.site_url, href)
+            category = Media.FILM
 
-            film = Media(title=title, url=url)
+            film = Media(title=title, url=url, category=category)
 
             # set description
             desc = pq(dom_item).find('.plot').text()
@@ -157,9 +158,10 @@ class TubeplusWrapper(BaseWrapper):
             title = pq(dom_item).find('img[border="0"]').show().attr('alt')
             href = pq(dom_item).find('a.panel').attr('href')
             url = urljoin(self.site_url, href)
+            category = Media.TVSHOW
 
             # Since it is a tvshow we need to fetch the children episodes
-            tvshow = Media(title=title, url=url, has_children=True)
+            tvshow = Media(title=title, url=url, category=category, has_children=True)
 
             # set description
             desc = pq(dom_item).find('.plot').text()

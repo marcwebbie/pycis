@@ -25,7 +25,7 @@ class ItemsTestCase(unittest.TestCase):
     def test_media_items_instantiantion(self):
         title = "The Animal Kingdom"
         url = "https://archive.org/details/Animal_Kingdom"
-        media = items.Media(title=title, url=url)
+        media = items.Media(title=title, url=url, category=items.Media.FILM)
 
         self.assertEqual(media.title, title)
         self.assertEqual(media.url, url)
@@ -33,13 +33,22 @@ class ItemsTestCase(unittest.TestCase):
 
     def test_media_str_representation(self):
         title = "The Animal Kingdom"
-        url = "https://archive.org/details/Animal_Kingdom"
-        media = items.Media(title=title, url=url)
-        media_with_children = items.Media(title=title, url=url, has_children=True)
+        url = "https://www.example.com"
+        media = items.Media(title=title, url=url, category=items.Media.FILM)
+        media_with_children = items.Media(
+            title=title, url=url, category=items.Media.TVSHOW, has_children=True)
 
-        expected_str = 'Media(title="The Animal Kingdom", url="https://archive.org/details/Animal_Kingdom", has_children={})'
-        self.assertEqual(str(media), expected_str.format(False))
-        self.assertEqual(str(media_with_children), expected_str.format(True))
+        expected_str = 'Media(title="The Animal Kingdom", url="https://www.example.com", category="{}", has_children={})'
+        self.assertEqual(str(media), expected_str.format("Film", False))
+        self.assertEqual(str(media_with_children), expected_str.format("Tv Show", True))
+
+    def test_item_category_matching(self):
+        media1 = items.Media(
+            title="Titanic", category=items.Media.FILM, url="http://www.example.com")
+        media2 = items.Media(
+            title="Lion King", category=items.Media.FILM, url="http://www.example.com")
+
+        self.assertEqual(media1.category, media2.category)
 
 
 class WrappersTestCase(unittest.TestCase):
