@@ -56,14 +56,17 @@ def download(q):
     while True:
         st = q.get()
         logging.debug("init downloading: Stream(host={}, id={}) ...".format(st.host, st.id))
-        ext = extractors.get_from_host(st.host)
-        raw_url = ext.get_raw_url(st.id)
-        logging.debug("finished downloading: Stream(host={}, id={}) ...".format(st.host, st.id))
-        if raw_url:
-            # final_url_list.append(raw_url)
-            sys.stdout.write(raw_url)
-            sys.stdout.write('\n')
-            sys.stdout.flush()
+        try:
+            ext = extractors.get_from_host(st.host)
+            raw_url = ext.get_raw_url(st.id) if ext else None
+            if raw_url:
+                sys.stdout.write(raw_url)
+                sys.stdout.write('\n')
+                sys.stdout.flush()
+            logging.debug("finished downloading: Stream(host={}, id={}) ...".format(st.host, st.id))
+        except:
+            logging.error(
+                "Error when extracting url from: Stream(host={}, id={}) ...".format(st.host, st.id))
         q.task_done()
 
 dl_queue = Queue()
@@ -90,7 +93,7 @@ def main():
         worker = Thread(target=download, args=(dl_queue,))
         worker.setDaemon(True)
         worker.start()
-        logging.critical("started worker: {}".format(i + 1))
+        logging.debug("started worker: {}".format(i + 1))
 
     site = wrappers.get_wrapper(args.site)
 
