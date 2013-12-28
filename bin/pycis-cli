@@ -1,0 +1,9 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+if __name__ == "__main__":
+    # to test, from a virtualenv type
+    # pip uninstall pycis && python setup.py install && python setup.py clean && pycis-cli
+
+    from pycis.interface import console
+    console.main()
