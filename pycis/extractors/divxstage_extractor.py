@@ -9,7 +9,6 @@ else:
 from pyquery import PyQuery
 
 from .base_extractor import BaseExtractor
-from pycis import utils
 
 
 class WiseUnpacker(object):
@@ -123,7 +122,7 @@ class DivxStageExtractor(BaseExtractor):
         # super().__init__(self)
         super(DivxStageExtractor, self).__init__()
         self.host_list = ["divxstage.eu"]
-        self.holder_url = "http://embed.divxstage.eu/embed.php?&width=653&height=438&v={}"
+        self.holder_url = "http://www.divxstage.eu/video/{}"
         self.regex_url = re.compile(
             r"(http|https)://(www|embed)\.(?P<host>divxstage\.eu)/(embed\.php\?v=http://www\.divxstage\.eu/)?(file/|video/)(?P<id>\w+$|\w+)(.*?$)"
         )
@@ -141,44 +140,22 @@ class DivxStageExtractor(BaseExtractor):
         dest_url = self.holder_url.format(video_id)
 
         logging.info("Destination url {}".format(dest_url))
-        html_embed = utils.fetch_page(dest_url)
+        response = self.fetch_page(dest_url)
 
-        pq = PyQuery(html_embed)
-        scripts_text = pq('body script').text()
+        param_file = re.search(r'flashvars.file=[\'\"](.*?)[\'\"]', response.decode('utf-8')).group(1)
+        param_filekey = re.search(r'flashvars.filekey=[\'\"](.*?)[\'\"]', response.decode('utf-8')).group(1)
 
-        rgx = re.compile(
-            b"}\('(?P<param_w>\w+)'[,\s]+'(?P<param_i>\w+)'[\s,]+'(?P<param_s>\w+)'[\s,]'(?P<param_e>\w+)'"
-        )
-        # unpack script
-        unpacked_script = None
-
-        if rgx.search(html_embed):
-            # find unpack function params
-
-            w = rgx.search(html_embed).group('param_w').decode('ascii')
-            i = rgx.search(html_embed).group('param_i').decode('ascii')
-            s = rgx.search(html_embed).group('param_s').decode('ascii')
-            e = rgx.search(html_embed).group('param_e').decode('ascii')
-
-            unpacked_script = WiseUnpacker.unpack(w, i, s, e)
-
-        # find "key" param
-        key_var_rgx = re.search(r'filekey=(\w+)', unpacked_script).group(1)
-        key_param = re.search(key_var_rgx + r'="([\w\.\-]+)"', unpacked_script).group(1)
-        # key_param = re.search(r'll="([\w\.\-]+)', unpacked_script).group(1)
-
-        # find "file" param
-        file_param = re.search(
-            r'advURL="http://www\.divxstage\.eu/video/(\w+)"', unpacked_script).group(1)
-
-        qparams = {
-            "key": key_param,
-            "file": file_param,
+        query_params = {
+            'codes': '1',
+            'file': param_file,
+            'key': param_filekey,
+            'pass': 'undefined',
+            'user': 'undefined',
         }
 
         # call api to get result string containing raw url
-        api_call = "http://www.divxstage.eu/api/player.api.php?" + urlencode(qparams)
-        api_result = str(utils.fetch_page(api_call))
+        api_call = "http://www.divxstage.eu/api/player.api.php?" + urlencode(query_params)
+        api_result = self.fetch_page(api_call).decode('utf-8')
 
         # extract raw url from api_call result
         url_found = None

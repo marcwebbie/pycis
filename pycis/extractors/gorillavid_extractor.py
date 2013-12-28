@@ -3,7 +3,6 @@ import re
 import sys
 
 from .base_extractor import BaseExtractor
-from pycis import utils
 
 
 class GorillaVidExtractor(BaseExtractor):
@@ -32,7 +31,7 @@ class GorillaVidExtractor(BaseExtractor):
         logging.info("Destination url {}".format(dest_url))
         html_embed = None
         try:
-            html_embed = utils.fetch_page(dest_url)
+            html_embed = self.fetch_page(dest_url)
         except:
             logging.error("Couldn't fetch page at url: {}".format(dest_url))
 

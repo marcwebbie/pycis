@@ -1,18 +1,11 @@
 import logging
 import re
 import sys
-if sys.version_info < (3, 0):
-    from urllib import urlencode
-    from urllib2 import urlopen
-else:
-    from urllib.request import urlopen
-    from urllib.parse import urlencode
 
-
+import requests
 from pyquery import PyQuery
 
 from .base_extractor import BaseExtractor
-from pycis import utils
 
 
 class PutLockerExtractor(BaseExtractor):
@@ -42,7 +35,7 @@ class PutLockerExtractor(BaseExtractor):
 
         html_embed = None
         try:
-            html_embed = util.fetch_page(dest_url)
+            html_embed = request.get(dest_url).text
         except:
             logging.info("Couldn't fetch page at url: {}".format(dest_url))
 
@@ -53,26 +46,24 @@ class PutLockerExtractor(BaseExtractor):
         params['fuck_you'] = pq('form input[name=fuck_you]').attr('value')
         params['confirm'] = pq('form input[name=confirm]').attr('value')
 
-        # build params
-        query = urlencode(params)
-        if sys.version > '3':
-            query = bytes(urlencode(params), encoding='utf-8')
+        headers = {
+            "Referer": dest_url,
+            "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/32.0.1674.0 Safari/537.36"
+        }
 
         # request webpage again as POST with query params to get real video page
-        response = urlopen(dest_url, query)
-        post_html = str(response.read())
+        api_response = requests.post(dest_url, params, headers=headers)
 
         # get api call url
         try:
-            api_call = re.search(r'/get_file\.php\?stream=[\w\=]+', post_html).group()
+            api_call = re.search(r'/get_file\.php\?stream=[\w\=]+', api_response.text).group()
             api_call = "http://www.putlocker.com/{}".format(api_call)
         except (IndexError, AttributeError):
-            logging.info(
-                ":{}:Couldn't build api call for : {}".format(self.name, video_id))
+            logging.error(":{}:Couldn't build api call for : {}".format(self.name, video_id))
             return None
 
         # get api call html
-        api_html = str(utils.fetch_page(api_call))
+        api_html = requests.get(api_call).text
 
         # get video url
         url_found = None
@@ -80,8 +71,7 @@ class PutLockerExtractor(BaseExtractor):
             url_rgx = re.compile(r'url="(http://[\w\-\.\?&/\=;%]*flv|mp4|avi|m4a)"')
             url_found = url_rgx.search(api_html).group(1)
         except (IndexError, AttributeError):
-            logging.info(
-                ":{}:Couldn't extract url from api call: {}".format(self.name, api_call))
+            logging.error(":{}:Couldn't extract url from api call: {}".format(self.name, api_call))
             return None
 
         if show_progress:

@@ -3,13 +3,17 @@ from collections import namedtuple
 import os
 import sys
 from threading import Thread
-from queue import Queue
+if sys.version_info > (3,):
+    from queue import Queue
+else:
+    # fallback to python2
+    from Queue import queue
 
 console_file_path = os.path.realpath(os.path.abspath(__file__))
 sys.path.append(os.path.dirname(os.path.dirname(console_file_path)))
 
-from pycis import extractors
-from pycis import wrappers
+import extractors
+import wrappers
 
 
 def download(q):

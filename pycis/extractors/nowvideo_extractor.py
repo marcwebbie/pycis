@@ -8,7 +8,6 @@ else:
     from urllib.parse import urlencode
 
 from .base_extractor import BaseExtractor
-from pycis import utils
 
 
 class NowVideoExtractor(BaseExtractor):
@@ -37,7 +36,7 @@ class NowVideoExtractor(BaseExtractor):
         dest_url = self.holder_url.format(video_id)
         logging.info("Destination url {}".format(dest_url))
 
-        html_embed = str(utils.fetch_page(dest_url))
+        html_embed = str(self.fetch_page(dest_url))
 
         # find "key" query param
         qparam_key = re.search(r'fkzd=["|\'](?P<key>[\w\s\.\-]+)["|\']', html_embed).group('key')
@@ -61,7 +60,7 @@ class NowVideoExtractor(BaseExtractor):
         api_url = "http://www.nowvideo.sx/api/player.api.php?{}".format(urlencode(qparams))
 
         # fetch response with containing raw url
-        html_response = str(utils.fetch_page(api_url))
+        html_response = str(self.fetch_page(api_url))
 
         url_found = None
         try:

@@ -1,6 +1,6 @@
 from .base_wrapper import BaseWrapper
-from pycis.utils import fetch_page
-from pycis.items import Media
+from utils import fetch_page
+from items import Media
 
 
 class ArchiveWrapper(BaseWrapper):

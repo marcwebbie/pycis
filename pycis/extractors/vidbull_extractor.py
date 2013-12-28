@@ -5,7 +5,6 @@ import sys
 from pyquery import PyQuery
 
 from .base_extractor import BaseExtractor
-from pycis import utils
 
 
 class VidbullExtractor(BaseExtractor):
@@ -52,7 +51,7 @@ class VidbullExtractor(BaseExtractor):
 
         html_embed = None
         try:
-            html_embed = utils.fetch_page(dest_url)
+            html_embed = self.fetch_page(dest_url)
         except:
             logging.error("Couldn't fetch page at url: {}".format(dest_url))
 

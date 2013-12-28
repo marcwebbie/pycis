@@ -1,22 +1,24 @@
+# -*- coding: utf-8 -*-
 import functools
 import logging
 import re
 import sys
-from queue import Queue
 from threading import Thread
 
 if sys.version_info > (3, 0):
     from urllib.parse import quote_plus, urljoin
+    from queue import Queue
 else:
     # fallback to python2
+    from Queue import Queue
     from urllib import quote_plus
     from urlparse import urljoin
 
 from pyquery import PyQuery
 
 from .base_wrapper import BaseWrapper
-from pycis.utils import fetch_page, debug_break
-from pycis.items import Media, Stream
+from utils import fetch_page
+from items import Media, Stream
 
 
 search_queue = Queue()
@@ -56,21 +58,16 @@ class TubeplusWrapper(BaseWrapper):
             logging.warn("{} has no url".format(media))
             return None
 
-        media_page = fetch_page(media.url)
-        pq = PyQuery(media_page)
+        pq = PyQuery(fetch_page(media.url))
 
         stream_list = []
-
-        # extract video id and video host name from href links
-        # from page fetched by media url
-        href_rgx = re.compile(
-            r"'(?P<vid>[\w\.:/\?\=\&]+)'[\s,]+'(?:[\w\s\-\":,\.`´\\]+)?'[\s,]+'(?P<host>[\w\.]+)'"
-        )
         for href in (a.attrib.get('href') for a in pq('#links_list .link a:not([class])')):
+            # clean whitespace and quotes from string
+            href = href.replace(" ", "").replace("'", "").replace('"', "")
             try:
-                video_url = href
-                video_host = href_rgx.search(href).group('host')
-                video_id = href_rgx.search(href).group('vid')
+                video_host = re.search(r'\((?P<vid>.*?),(?:.*?),(?P<host>.*?)\);', href).group('host')
+                video_id = re.search(r'\((?P<vid>.*?),(?:.*?),(?P<host>.*?)\);', href).group('vid')
+                video_url = None
 
                 stream = Stream(video_id, video_host, video_url)
                 logging.info("Retrieved: {}".format(stream))
@@ -103,17 +100,21 @@ class TubeplusWrapper(BaseWrapper):
         # build episodes
         episode_list = []
         for link in links:
-            title = re.search(rgx, link).group('title')
-            title = re.sub('_', ' ', title)
-            url = urljoin(self.site_url, link)
+            try:
+                title = re.search(rgx, link).group('title')
+                title = re.sub('_', ' ', title)
+                url = urljoin(self.site_url, link)
 
-            episode = Media(title=title, url=url, category=Media.TVSHOW_EPISODE)
+                episode = Media(title=title, url=url, category=Media.TVSHOW_EPISODE)
 
-            link = HTMLParser().unescape(unquote(link))
-            episode.episode_num = int(re.search(rgx, link).group('episode'))
-            episode.season_num = int(re.search(rgx, link).group('season'))
+                link = HTMLParser().unescape(unquote(link))
+                episode.episode_num = int(re.search(rgx, link).group('episode'))
+                episode.season_num = int(re.search(rgx, link).group('season'))
 
-            episode_list.append(episode)
+                episode_list.append(episode)
+            except AttributeError:
+                logging.error("Couldn't get episode info from: {}".format(link))
+                pass
 
         return episode_list
 
@@ -182,7 +183,7 @@ class TubeplusWrapper(BaseWrapper):
         return tvshow_list
 
     def search(self, search_query, best_match=False):
-        """ search films and tvshows from tubeplus 
+        """ search films and tvshows from tubeplus
         """
 
         search_result_list.clear()
@@ -194,7 +195,7 @@ class TubeplusWrapper(BaseWrapper):
 
         media_list = search_result_list
 
-        if best_match == True:
+        if best_match:
             if media_list:
                 from difflib import SequenceMatcher as sq
                 return max((m for m in media_list),
@@ -208,7 +209,7 @@ class TubeplusWrapper(BaseWrapper):
         media_list = self.search_film(search_query)
         media_list.extend(self.search_tvshow(search_query))
 
-        if best_match == True:
+        if best_match:
             if media_list:
                 from difflib import SequenceMatcher as sq
                 return max((m for m in media_list),
