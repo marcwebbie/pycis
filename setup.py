@@ -4,7 +4,7 @@ from setuptools import setup, find_packages
 
 
 setup(name='pycis',
-      version='0.0.1-dev',
+      version='0.0.2-dev',
       license='MIT',
       description='Subtitles, faster than your thoughts',
       long_description=open('README.md').read(),

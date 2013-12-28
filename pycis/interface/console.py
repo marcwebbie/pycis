@@ -37,7 +37,7 @@ class LogFormatter(logging.Formatter):
     }
 
     def format(self, record):
-        final_msg = super().format(record)
+        final_msg = super(LogFormatter, self).format(record)
 
         level = record.__dict__['levelname']
         return LogFormatter.color[level] + final_msg + LogFormatter.color['ENDC']

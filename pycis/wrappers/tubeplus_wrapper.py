@@ -29,12 +29,9 @@ def search_worker(q):
     while True:
         func = q.get()
         # do the search
-        try:
-            result_list = func()
-            if result_list:
-                search_result_list.extend(result_list)
-        except:
-            logging.error("Search error on search worker")
+        result_list = func()
+        if result_list:
+            search_result_list.extend(result_list)
         q.task_done()
 
 
@@ -137,7 +134,7 @@ class TubeplusWrapper(BaseWrapper):
 
             # set description
             desc = pq(dom_item).find('.plot').text()
-            film.description = re.sub(r'\s', ' ', str(desc))  # remove newlines from description
+            film.description = re.sub(r'\s', ' ', desc)  # remove newlines from description
             film.rating = pq(dom_item).find('span.rank_value').text()
 
             # set thumbnail url
@@ -169,7 +166,7 @@ class TubeplusWrapper(BaseWrapper):
 
             # set description
             desc = pq(dom_item).find('.plot').text()
-            tvshow.description = re.sub('\s', ' ', str(desc))  # remove newlines from description
+            tvshow.description = re.sub('\s', ' ', desc)  # remove newlines from description
 
             # set rating
             tvshow.rating = pq(dom_item).find('span.rank_value').text()
@@ -186,7 +183,7 @@ class TubeplusWrapper(BaseWrapper):
         """ search films and tvshows from tubeplus
         """
 
-        search_result_list.clear()
+        search_result_list = []
 
         search_queue.put(functools.partial(self.search_tvshow, search_query))
         search_queue.put(functools.partial(self.search_film, search_query))
