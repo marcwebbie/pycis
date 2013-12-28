@@ -49,8 +49,8 @@ class IteractiveConsole(cmd.Cmd):
 
     """ Iterative mode console for searching """
 
-    def __init__(self, site, num_of_workers=5):
-        super().__init__()
+    def __init__(self, site, num_of_workers=5, *args, **kwargs):
+        super(IteractiveConsole, self).__init__(*args, **kwargs)
         self.choice_list = []
         self.stream_queue = Queue()
         self.site = wrappers.get_wrapper(site)
