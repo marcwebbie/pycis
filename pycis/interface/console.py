@@ -91,7 +91,7 @@ def download(q, print_url=True):
 def spawn_workers(num_of_workers, print_url=True):
     for i in range(num_of_workers):
         worker = Thread(target=download, args=(dl_queue, print_url,))
-        worker.setDaemon(True)
+        worker.daemon = True
         worker.start()
         logging.debug("started worker: {}".format(i + 1))
 
@@ -132,8 +132,7 @@ def go_play(args):
     for url in result_list:
         command = [args.player, url]
         ret_value = subprocess.check_output(command, stderr=open(os.devnull))
-        if ret_value != 0:
-            logging.error("Couldn't play video from url: {}".format(url))
+        break
 
 
 def go_print_search_list(args):
@@ -184,4 +183,4 @@ if __name__ == "__main__":
     try:
         main()
     except KeyboardInterrupt:
-        print("")
+        pass
